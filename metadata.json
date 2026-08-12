@@ -1,0 +1,6 @@
+{
+  "name": "Oak KS3 Curriculum Downloader",
+  "description": "Download and preserve local copies of Oak National Academy Key Stage 3 materials with structured folder hierarchy and nested file metadata.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

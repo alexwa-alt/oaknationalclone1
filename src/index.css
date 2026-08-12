@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@layer base {
+  /* Warm Library Parchment Theme */
+  .theme-warm_library {
+    background-color: #fdfbf7 !important;
+    color: #292524 !important;
+  }
+  .theme-warm_library .bg-white,
+  .theme-warm_library .dark\:bg-slate-900 {
+    background-color: #f7f3eb !important;
+    border-color: #e7e5e4 !important;
+  }
+  .theme-warm_library .bg-slate-50,
+  .theme-warm_library .dark\:bg-slate-950 {
+    background-color: #f3efe6 !important;
+  }
+  .theme-warm_library .bg-emerald-600,
+  .theme-warm_library .bg-emerald-500 {
+    background-color: #be123c !important; /* Burgundy / Rose */
+    color: #ffffff !important;
+  }
+  .theme-warm_library .text-emerald-600,
+  .theme-warm_library .text-emerald-500,
+  .theme-warm_library .text-emerald-400 {
+    color: #be123c !important;
+  }
+
+  /* Navy School Network Theme */
+  .theme-navy {
+    background-color: #0b1329 !important;
+    color: #f1f5f9 !important;
+  }
+  .theme-navy .bg-white,
+  .theme-navy .dark\:bg-slate-900 {
+    background-color: #111c38 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+  }
+  .theme-navy .bg-slate-50,
+  .theme-navy .dark\:bg-slate-950 {
+    background-color: #0e172e !important;
+  }
+  .theme-navy .bg-emerald-600,
+  .theme-navy .bg-emerald-500 {
+    background-color: #2563eb !important; /* Royal Blue */
+    color: #ffffff !important;
+  }
+  .theme-navy .text-emerald-600,
+  .theme-navy .text-emerald-500,
+  .theme-navy .text-emerald-400 {
+    color: #60a5fa !important;
+  }
+
+  /* Dark Classroom Night Mode Theme */
+  .theme-dark_classroom {
+    background-color: #090d16 !important;
+    color: #f8fafc !important;
+  }
+  .theme-dark_classroom .bg-white,
+  .theme-dark_classroom .dark\:bg-slate-900 {
+    background-color: #131b2e !important;
+    border-color: #1e293b !important;
+    color: #ffffff !important;
+  }
+  .theme-dark_classroom .bg-slate-50,
+  .theme-dark_classroom .dark\:bg-slate-950 {
+    background-color: #0b1120 !important;
+  }
+  .theme-dark_classroom .bg-emerald-600,
+  .theme-dark_classroom .bg-emerald-500 {
+    background-color: #d97706 !important; /* Classroom Amber */
+    color: #ffffff !important;
+  }
+  .theme-dark_classroom .text-emerald-600,
+  .theme-dark_classroom .text-emerald-500,
+  .theme-dark_classroom .text-emerald-400 {
+    color: #fbbf24 !important;
+  }
+
+  /* High Contrast Accessibility Theme */
+  .theme-high_contrast {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+  }
+  .theme-high_contrast .bg-white,
+  .theme-high_contrast .dark\:bg-slate-900,
+  .theme-high_contrast .bg-slate-50,
+  .theme-high_contrast .dark\:bg-slate-950 {
+    background-color: #000000 !important;
+    border-color: #ffffff !important;
+    border-width: 2px !important;
+    color: #ffffff !important;
+  }
+  .theme-high_contrast .bg-emerald-600,
+  .theme-high_contrast .bg-emerald-500 {
+    background-color: #facc15 !important; /* High-Visibility Yellow */
+    color: #000000 !important;
+    font-weight: 800 !important;
+  }
+  .theme-high_contrast .text-emerald-600,
+  .theme-high_contrast .text-emerald-500,
+  .theme-high_contrast .text-emerald-400 {
+    color: #facc15 !important;
+  }
+
+  /* Font Families */
+  .font-serif {
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
+  }
+  .font-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  }
+  .font-sans {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  }
+
+  /* Density Compact */
+  .density-compact p,
+  .density-compact button,
+  .density-compact input,
+  .density-compact table {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+}
+
