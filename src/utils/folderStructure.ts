@@ -160,180 +160,34 @@ export function buildQueueItemPathAndMetadata(
   return { computedPath, sidecarPath, sidecarMetadata };
 }
 
-export async function generateContentForResource(resource: OakResource, metadata: SidecarMetadata): Promise<string | Uint8Array> {
-  if (resource.type === 'quiz' && resource.quizQuestions) {
-    return JSON.stringify(
-      {
-        metadata,
-        quiz: {
-          title: resource.title,
-          totalQuestions: resource.quizQuestions.length,
-          questions: resource.quizQuestions,
-        },
-      },
-      null,
-      2
-    );
-  }
-
-  if (resource.type === 'transcript' || resource.fileExtension === 'txt') {
-    return `OAK NATIONAL ACADEMY - LESSON TRANSCRIPT
-======================================================
-Key Stage: ${metadata.keyStage}
-Subject: ${metadata.subject.title}
-Unit: ${metadata.unit.title} (Unit ${metadata.unit.number})
-Lesson: ${metadata.lesson.title} (Lesson ${metadata.lesson.number})
-Year Group: ${metadata.lesson.yearGroup}
-License: ${metadata.licensing.licenseName}
-
-LEARNING OBJECTIVES:
-${metadata.lesson.learningObjectives.map((obj, i) => `${i + 1}. ${obj}`).join('\n')}
-
-KEY WORDS:
-${metadata.lesson.keyWords.join(', ')}
-
-TRANSCRIPT CONTENT:
-------------------------------------------------------
-${resource.contentPreview || 'Full teaching video transcript content provided by Oak National Academy for offline review.'}
-`;
-  }
-
-  // PDF or default representation
-  return `%PDF-1.4
-% Oak National Academy Resource Document Placeholder
-% KeyStage: ${metadata.keyStage}
-% Subject: ${metadata.subject.title}
-% Unit: ${metadata.unit.title}
-% Lesson: ${metadata.lesson.title}
-% Resource: ${resource.title} (${resource.type})
-% License: Open Government Licence v3.0
-
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-
-3 0 obj
-<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
-endobj
-
-4 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
-endobj
-
-5 0 obj
-<< /Length 280 >>
-stream
-BT
-/F1 18 Tf
-50 750 Td
-(Oak National Academy - KS3 ${metadata.subject.title}) Tj
-0 -30 Td
-/F1 14 Tf
-(${metadata.unit.title} - Lesson ${metadata.lesson.number}) Tj
-0 -25 Td
-(${metadata.lesson.title}) Tj
-0 -35 Td
-/F1 10 Tf
-(Resource Type: ${resource.type.toUpperCase()}) Tj
-0 -20 Td
-(Objectives: ${metadata.lesson.learningObjectives[0] || 'Core curriculum mastery'}) Tj
-ET
-endstream
-endobj
-
-xref
-0 6
-0000000000 65535 f 
-0000000130 00000 n 
-0000000185 00000 n 
-0000000248 00000 n 
-0000000350 00000 n 
-0000000420 00000 n 
-trailer
-<< /Size 6 /Root 1 0 R >>
-startxref
-750
-%%EOF`;
-}
-
-export async function createZipFromQueue(
-  queueItems: DownloadQueueItem[],
+export async function createHierarchyZip(
+  subjects: OakSubject[],
   config: FolderStructureConfig,
-  onProgress?: (percent: number, currentItemPath: string) => void
+  onProgress?: (percent: number, currentFolderPath: string) => void
 ): Promise<Blob> {
   const zip = new JSZip();
-  const total = queueItems.length;
+  const rootPath = sanitizeFilename(config.rootFolderName);
+  const lessons = subjects.flatMap((subject) =>
+    subject.units.flatMap((unit) => unit.lessons.map((lesson) => ({ unit, lesson })))
+  );
 
-  // Root Manifest if enabled
-  if (config.generateRootManifest) {
-    const rootPath = sanitizeFilename(config.rootFolderName);
-    const rootManifest = {
-      generator: 'Oak KS3 Curriculum Downloader v1.0',
-      exportedAt: new Date().toISOString(),
-      keyStage: 'KS3',
-      totalFiles: queueItems.length,
-      config,
-      filesIndex: queueItems.map((item) => ({
-        path: item.computedPath,
-        type: item.resource.type,
-        subject: item.subjectTitle,
-        unit: item.unitTitle,
-        lesson: item.lessonTitle,
-      })),
-    };
-    zip.file(`${rootPath}/manifest.json`, JSON.stringify(rootManifest, null, 2));
-  }
+  zip.folder(rootPath);
 
-  // Subject READMEs
-  if (config.generateSubjectReadme) {
-    const rootPath = sanitizeFilename(config.rootFolderName);
-    const subjectsMap = new Map<string, DownloadQueueItem[]>();
-    for (const item of queueItems) {
-      if (!subjectsMap.has(item.subjectTitle)) {
-        subjectsMap.set(item.subjectTitle, []);
-      }
-      subjectsMap.get(item.subjectTitle)!.push(item);
-    }
+  for (let index = 0; index < lessons.length; index++) {
+    const { unit, lesson } = lessons[index];
+    const yearPath = config.includeYearFolder === false ? '' : sanitizeFilename(unit.yearGroup || lesson.yearGroup);
+    const folderPath = [
+      rootPath,
+      yearPath,
+      formatUnitFolder(unit, config.unitFolderFormat),
+      formatLessonFolder(lesson, config.lessonFolderFormat),
+    ].filter(Boolean).join('/');
 
-    for (const [subjTitle, items] of subjectsMap.entries()) {
-      const subjFolder = formatSubjectFolder(
-        { title: subjTitle, slug: items[0].subjectSlug } as OakSubject,
-        config.subjectFolderFormat
-      );
-      const readmeContent = `# ${subjTitle} - Oak KS3 Curriculum Archive
+    // Explicitly add each leaf so the ZIP extracts to empty lesson folders.
+    zip.folder(folderPath);
 
-Exported on: ${new Date().toLocaleDateString()}
-Key Stage: 3
-Total Resources Archived: ${items.length}
-
-## Included Materials
-
-${Array.from(new Set(items.map((i) => `### Unit ${i.unitNumber}: ${i.unitTitle}\n- Lesson ${i.lessonNumber}: ${i.lessonTitle}`))).join('\n')}
-
----
-Resource material provided by Oak National Academy under the Open Government Licence v3.0.
-`;
-      zip.file(`${rootPath}/${subjFolder}/README.md`, readmeContent);
-    }
-  }
-
-  // Process files
-  for (let idx = 0; idx < queueItems.length; idx++) {
-    const item = queueItems[idx];
     if (onProgress) {
-      const p = Math.round(((idx + 1) / total) * 100);
-      onProgress(p, item.computedPath);
-    }
-
-    const content = await generateContentForResource(item.resource, item.sidecarMetadata);
-    zip.file(item.computedPath, content);
-
-    if (config.generateSidecarMetadata) {
-      zip.file(item.sidecarPath, JSON.stringify(item.sidecarMetadata, null, 2));
+      onProgress(Math.round(((index + 1) / lessons.length) * 100), folderPath);
     }
   }
 

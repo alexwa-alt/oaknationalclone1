@@ -353,12 +353,9 @@ export default function App() {
 
         {activeTab === 'queue' && (
           <BatchDownloadManager
-            queueItems={queueItems}
+            subjects={subjects}
             folderConfig={folderConfig}
             onUpdateFolderConfig={handleUpdateFolderConfig}
-            onClearQueue={handleClearQueue}
-            onRemoveQueueItem={handleRemoveQueueItem}
-            onSaveItemsToOfflineVault={handleSaveItemsToOfflineVault}
           />
         )}
 
@@ -449,13 +446,9 @@ export default function App() {
                 </ul>
               </div>
 
-              <a
-                href={previewingResourceItem.resource.downloadUrl}
-                download
-                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2"
-              >
-                <Download className="w-4 h-4" /> Download Sample {previewingResourceItem.resource.type.toUpperCase()} File
-              </a>
+              <p className="rounded-xl bg-slate-100 dark:bg-slate-800 px-3 py-2.5 text-center text-xs text-slate-600 dark:text-slate-300">
+                Resource downloads are not included in the hierarchy-only export.
+              </p>
             </div>
 
           </div>
