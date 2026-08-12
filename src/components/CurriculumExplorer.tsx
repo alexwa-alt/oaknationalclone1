@@ -38,11 +38,9 @@ import {
   ResourceType,
   FolderStructureConfig,
   UiCustomizationConfig,
-  DownloadQueueItem,
 } from '../types';
 import {
-  buildQueueItemPathAndMetadata,
-  createZipFromQueue,
+  createHierarchyZip,
   sanitizeFilename,
 } from '../utils/folderStructure';
 
@@ -113,49 +111,13 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
     });
 
     try {
-      const subjectQueueItems: DownloadQueueItem[] = [];
-      for (const unit of subjectToDownload.units) {
-        for (const lesson of unit.lessons) {
-          for (const resource of lesson.resources) {
-            const { computedPath, sidecarPath, sidecarMetadata } = buildQueueItemPathAndMetadata(
-              subjectToDownload,
-              unit,
-              lesson,
-              resource,
-              folderConfig
-            );
-
-            subjectQueueItems.push({
-              id: `${resource.id}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-              subjectSlug: subjectToDownload.slug,
-              subjectTitle: subjectToDownload.title,
-              unitSlug: unit.slug,
-              unitTitle: unit.title,
-              unitNumber: unit.unitNumber,
-              lessonSlug: lesson.slug,
-              lessonTitle: lesson.title,
-              lessonNumber: lesson.lessonNumber,
-              resource,
-              computedPath,
-              sidecarPath,
-              sidecarMetadata,
-              status: 'queued',
-              progressPercent: 0,
-              bytesDownloaded: 0,
-              totalBytes: resource.fileSizeBytes,
-              addedAt: Date.now(),
-            });
-          }
-        }
-      }
-
       setPackagingSubject({
         subjectTitle: subjectToDownload.title,
         progress: 10,
         statusText: `Building folder hierarchy with preserved Year subfolders...`,
       });
 
-      const zipBlob = await createZipFromQueue(subjectQueueItems, folderConfig, (percent, currentPath) => {
+      const zipBlob = await createHierarchyZip([subjectToDownload], folderConfig, (percent, currentPath) => {
         setPackagingSubject({
           subjectTitle: subjectToDownload.title,
           progress: Math.max(10, percent),
@@ -1129,53 +1091,16 @@ export const CurriculumExplorer: React.FC<CurriculumExplorerProps> = ({
                   </div>
                 </div>
 
-                {/* Generated Sidecar JSON Preview */}
-                <div>
-                  <p className="text-xs font-semibold text-slate-500 mb-1.5">Sidecar JSON Metadata (.metadata.json):</p>
-                  <pre className="p-3 bg-slate-950 text-emerald-400 font-mono text-[10px] rounded-xl overflow-x-auto max-h-56 leading-relaxed border border-slate-800">
-                    {JSON.stringify(
-                      buildQueueItemPathAndMetadata(
-                        inspectedItem.subject,
-                        inspectedItem.unit,
-                        inspectedItem.lesson,
-                        inspectedItem.resource,
-                        folderConfig
-                      ).sidecarMetadata,
-                      null,
-                      2
-                    )}
-                  </pre>
-                </div>
-
-                {/* Single Resource Action */}
-                <div className="pt-2 flex gap-2">
-                  <button
-                    onClick={() => onToggleResourceSelect(inspectedItem.resource.id)}
-                    className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all flex items-center justify-center gap-1.5 ${
-                      selectedResourceIds.has(inspectedItem.resource.id)
-                        ? 'bg-amber-500/10 border-amber-300 text-amber-700 dark:text-amber-300'
-                        : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    }`}
-                  >
-                    {selectedResourceIds.has(inspectedItem.resource.id) ? 'Deselect Item' : 'Select for Batch Download'}
-                  </button>
-
-                  <a
-                    href={inspectedItem.resource.downloadUrl}
-                    download
-                    className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition-colors shrink-0 flex items-center justify-center"
-                    title="Direct File Download"
-                  >
-                    <Download className="w-4 h-4" />
-                  </a>
-                </div>
+                <p className="rounded-xl bg-slate-100 dark:bg-slate-950 p-3 text-xs text-slate-600 dark:text-slate-300">
+                  The current export creates empty Year, Unit, and Lesson folders only. Resource files and metadata are not generated.
+                </p>
 
               </div>
             ) : (
               <div className="py-8 text-center space-y-2">
                 <Info className="w-8 h-8 text-slate-300 mx-auto" />
                 <p className="text-xs text-slate-500">
-                  Click on any resource pill in the left tree to inspect its learning objectives, key terms, and generated sidecar metadata.
+                  Click on any resource pill in the left tree to inspect its lesson context.
                 </p>
               </div>
             )}
