@@ -5,6 +5,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // GitHub Pages serves project sites from /<repository-name>/ rather than /.
+    base: process.env.GITHUB_ACTIONS === 'true' ? '/oaknationalclone1/' : '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
